@@ -188,7 +188,7 @@ def random_obstacle_gen():
 def night_time():
     global c,bg_color,currentframe_time,last_c_increment,bg_speed,last_night_time,night,game_over
     night_cooldown=5
-    day_duration=50000
+    day_duration=5000
     if currentframe_time-last_night_time>=day_duration and night==False and game_over==False :
         night=True
         last_night_time=currentframe_time
