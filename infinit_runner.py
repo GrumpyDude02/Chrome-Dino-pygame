@@ -26,6 +26,8 @@ dino_run1=pygame.transform.scale(pygame.image.load('Dino\DinoRun1.png').convert_
 dino_run2=pygame.transform.scale(pygame.image.load('Dino\DinoRun2.png').convert_alpha(),(cell_size*dino_scale,cell_size*dino_scale))
 dino_jump=pygame.transform.scale(pygame.image.load('Dino\DinoJump.png').convert_alpha(),(cell_size*dino_scale,cell_size*dino_scale))
 dino_dead=pygame.transform.scale(pygame.image.load('Dino\DinoDead.png').convert_alpha(),(cell_size*dino_scale,cell_size*dino_scale))
+dino_duck1=pygame.transform.scale(pygame.image.load('Dino\DinoDuck1.png').convert_alpha(),(cell_size+72,cell_size+22))
+dino_duck2=pygame.transform.scale(pygame.image.load('Dino\DinoDuck2.png').convert_alpha(),(cell_size+72,cell_size+22))
 
 #Other Assets
 cloud=pygame.transform.scale(pygame.image.load('Background\Cloud.png').convert_alpha(),(cell_size*3,cell_size*3))
@@ -42,6 +44,8 @@ replay_button=pygame.image.load('GameOver\Reset.png').convert_alpha()
 imagearray=[ Large_Cactus , small_cactus , small_cactus2 , small_cactus3 , cloud ]
 
 Dino_RUN=[dino_run1,dino_run2]
+Dino_DUCK=[dino_duck1,dino_duck2]
+Bird_sprites=[]
 
 class obstacles():
     def __init__(self,x,y,imageindex):
@@ -57,17 +61,17 @@ class obstacles():
         #pygame.draw.rect(screen,(255,0,0),self.cactusrec,2)
         screen.blit(image,self.cactusrec)  
         self.pos+=speed    
-     
+            
 class runner():
     def __init__(self):
         self.pos=Vector2(2,14)
         self.acc=Vector2(0,player_acc)
         self.velocity=Vector2(0,0)
         self.hitbox=dino_run1.get_rect()
-        self.hitbox.inflate_ip(-30,-30)
         self.cooldown=100
         self.isjump=False
         self.death=False
+        self.duck=False
         
     def draw_runner(self):
         global frame
@@ -80,12 +84,25 @@ class runner():
             frame+=1
             if frame>=len(Dino_RUN):
                 frame=0
-        if running==True and self.death==False:
+                
+        if not self.death and running:
+            self.hitbox=dino_run1.get_rect()
+            self.hitbox.inflate_ip(-30,-30)
+            self.hitbox.center=(self.pos.x*cell_size,self.pos.y*cell_size-20)
             #pygame.draw.rect(screen,(0,255,0),self.hitbox,2)
             screen.blit(Dino_RUN[frame],self.hitbox)
-        elif self.isjump==True :
+                
+        elif self.duck and  not self.isjump and not running :
+            self.hitbox=dino_duck1.get_rect()
+            self.hitbox.inflate_ip(-30,-30)
+            self.hitbox.center=(self.pos.x*cell_size,self.pos.y*cell_size-5)
+            screen.blit(Dino_DUCK[frame],self.hitbox)
+            #pygame.draw.rect(screen,(0,255,0),self.hitbox,2)
+           
+        if self.isjump:
             screen.blit(dino_jump,self.hitbox) 
-        elif self.death==True:
+            
+        if self.death:
             screen.blit(dino_dead,self.hitbox)   
             
         
@@ -95,17 +112,22 @@ class runner():
         if self.isjump==False:
             if keys[pygame.K_SPACE] and self.pos.y==14 and self.death==False:
                 self.isjump=True
-                running=False
                 if self.isjump==True:
                     self.velocity.y = -0.60
                     jump_sound.play()
-        
+        if keys[pygame.K_DOWN] and not self.death:
+            self.velocity.y=0.6
+            self.duck=True
+            running=False
+        else:
+            self.duck=False
+            running=True
         self.velocity += self.acc
         self.pos += self.velocity+0.5*self.acc*0.9
         if self.pos.y>14:
             self.pos.y=14
             self.isjump=False
-            running=True
+            
      
 floor_rect=floor.get_rect()
 floor2_rect=floor.get_rect()
